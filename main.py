@@ -10,9 +10,13 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from random import randint
 import logging
+import os
+import csv
+from datetime import datetime
 
 #import of secrets
 import secrets
+csvFile = './LoadingTimeResults.csv'
 
 
 
@@ -48,14 +52,27 @@ def load_time_testing(user, userType, passwordSecret):
     time.sleep(longDelay())
     if userType == "Student":
         bookItems()
-    if userType == "StoreAssistant":
+    elif userType == "StoreAssistant":
         bookingLookUp()
+    else:
+        print("")
         
 def bookItems():
-    print("test")
+    print("test bookItems")
     
 def bookingLookUp():
     print("test")
+    
+def updateCSV():
+    new_row = ["test", 
+               "test2"]
+        
+    with open("LoadingTimeResults.csv", "a", newline='') as csvFile:
+        writer=csv.writer(csvFile)
+        #csvFile.write("\n")
+        writer.writerow(new_row)
+    csvFile.close()
+
     
 def longDelay():
     '''
@@ -71,10 +88,15 @@ def shortDelay():
 
 passwordSecret = secrets.password
 
+logging.basicConfig(filename='testing.log', 
+                    filemode='a', 
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
+
 for i in secrets.username:
     user = i[0]
     userType = i[1]
-    print(user)
-    print(userType)
-    load_time_testing(user, userType, passwordSecret)
+    #load_time_testing(user, userType, passwordSecret)
+    updateCSV()
     
