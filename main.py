@@ -10,7 +10,6 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from random import randint
 import logging
-import os
 import csv
 from datetime import datetime
 
@@ -51,25 +50,69 @@ def load_time_testing(user, userType, passwordSecret):
     logging.info("logged into system")
     time.sleep(longDelay())
     if userType == "Student":
-        bookItems()
+        bookItems(driver, user, userType)
     elif userType == "StoreAssistant":
-        bookingLookUp()
+        bookingLookUp(driver, user, userType)
     else:
         print("")
         
 def bookItems():
     print("test bookItems")
     
-def bookingLookUp():
-    print("test")
+def bookingLookUp(driver, user, userType):
+    page_menu = driver.find_element(By.ID, "page-menu")
+    page_menu.click()
+
+    time.sleep(0.5)
+
+    booking_management = driver.find_element(By.CSS_SELECTOR, "[aria-label='Booking Management']")
+    booking_management.click()
+
+    time.sleep(shortDelay())
+    # Wait for the element to be visible on the page
+    wait = WebDriverWait(driver, 10)
+    store_desk = wait.until(EC.visibility_of_element_located((By.LINK_TEXT, "Store Desk")))
+
+    # Move to the element and click on it
+    actions = ActionChains(driver)
+    actions.move_to_element(store_desk).perform()
+    store_desk.click()
+
+    time.sleep(shortDelay)
+    test = user
+    bookedto_search = driver.find_element(By.ID, "bookedto_search")
+    for i in test:
+        bookedto_search.send_keys(i)
+    start = time.time()
+    bookedto_search.send_keys(Keys.ENTER)
+    bookedto_search.send_keys(Keys.PAGE_DOWN)
+
+    wait = WebDriverWait(driver, 60)
+    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "sd-asset-item-content")))
+
+    end = time.time()
+    load_time_recorded = end-start
     
-def updateCSV():
-    new_row = ["test", 
-               "test2"]
-        
+    #TODO cancel booking
+    updateCSV(user, userType, load_time_recorded)
+    
+def updateCSV(user, userType, load_time_recorded):
+    '''
+    Writes new results to CSV output
+    '''
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    current_date = datetime.now().date()
+    
+    
+    new_row = [current_date,
+               current_time,
+               user, 
+               userType,
+               load_time_recorded]
+    
     with open("LoadingTimeResults.csv", "a", newline='') as csvFile:
         writer=csv.writer(csvFile)
-        #csvFile.write("\n")
         writer.writerow(new_row)
     csvFile.close()
 
@@ -98,5 +141,5 @@ for i in secrets.username:
     user = i[0]
     userType = i[1]
     #load_time_testing(user, userType, passwordSecret)
-    updateCSV()
+    updateCSV(user, userType)
     

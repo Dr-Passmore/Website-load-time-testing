@@ -1,2 +1,4 @@
 secrets.py
 *.log
+__pycache__
+LoadingTimeResults.csv
