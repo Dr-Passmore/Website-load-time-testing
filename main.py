@@ -19,7 +19,7 @@ csvFile = './LoadingTimeResults.csv'
 
 
 
-def load_time_testing(user, userType, passwordSecret):
+def load_time_testing(user, userType, passwordSecret, item):
     '''
     Initiates the webdriver and logs into the website
     '''
@@ -50,14 +50,70 @@ def load_time_testing(user, userType, passwordSecret):
     logging.info("logged into system")
     time.sleep(longDelay())
     if userType == "Student":
-        bookItems(driver, user, userType)
+        bookItems(driver, user, userType, item)
     elif userType == "StoreAssistant":
         bookingLookUp(driver, user, userType)
     else:
         print("")
         
-def bookItems():
+def bookItems(driver, user, userType, item):
     print("test bookItems")
+    booking = driver.find_element(By.LINK_TEXT, "Book")
+    booking.click()
+    
+    time.sleep(shortDelay())
+    
+    booking_item = driver.find_element(By.CLASS_NAME, "booking-option-image")
+    booking_item.click()
+    
+    time.sleep(longDelay())
+    
+    booking_searchbar = driver.find_element(By.ID, "asearch")
+    for i in item:
+        booking_searchbar.send_keys(i)
+    
+    start = time.time()
+    booking_searchbar.send_keys(Keys.ENTER)
+    
+    wait = WebDriverWait(driver, 60)
+    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "asset-item")))
+   
+    end = time.time()
+    load_time_recorded = end-start
+    
+    time.sleep(0.5)
+    
+    book_item = driver.find_element(By.CSS_SELECTOR, "[aria-label='Add to Basket']")
+    book_item.click()
+    
+    time.sleep(0.5)
+    
+    basket = driver.find_element(By.CSS_SELECTOR, "[aria-label='Basket']")
+    basket.click()
+    
+    time.sleep(shortDelay())
+    
+    check_avalibility = driver.find_element(By.CSS_SELECTOR, "[aria-label='Check Availability']")
+    check_avalibility.click()
+    
+    time.sleep(shortDelay())
+    
+    backet_booking = driver.find_element(By.CSS_SELECTOR, "[aria-label]='Book'")
+    backet_booking.click()
+    
+    time.sleep(shortDelay())
+    
+    terms_toggle = driver.find_element(By.ID, "basket_terms")
+    terms_toggle.click()
+    
+    time.sleep(0.2)
+    
+    book = driver.find_element(By.CSS_SELECTOR, "[aria-label]='Book'")
+    book.click()
+    
+    time.sleep(longDelay)
+    
+    updateCSV(user, userType, load_time_recorded)
     
 def bookingLookUp(driver, user, userType):
     page_menu = driver.find_element(By.ID, "page-menu")
@@ -100,10 +156,12 @@ def updateCSV(user, userType, load_time_recorded):
     '''
     Writes new results to CSV output
     '''
+    
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     current_date = datetime.now().date()
     
+    logging.info("Updating CSV file")
     
     new_row = [current_date,
                current_time,
@@ -115,6 +173,7 @@ def updateCSV(user, userType, load_time_recorded):
         writer=csv.writer(csvFile)
         writer.writerow(new_row)
     csvFile.close()
+    logging.info(f"CSV updated with {new_row}")
 
     
 def longDelay():
@@ -136,10 +195,11 @@ logging.basicConfig(filename='testing.log',
                     level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
-
+load_time_recorded = 2
 for i in secrets.username:
     user = i[0]
     userType = i[1]
-    #load_time_testing(user, userType, passwordSecret)
-    updateCSV(user, userType)
+    item = i[2]
+    load_time_testing(user, userType, passwordSecret, item)
+    #updateCSV(user, userType, load_time_recorded)
     
