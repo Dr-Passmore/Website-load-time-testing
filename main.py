@@ -51,7 +51,7 @@ def load_time_testing(user, userType, passwordSecret, item):
     time.sleep(longDelay())
     if userType == "Student":
         bookItems(driver, user, userType, item)
-    elif userType == "StoreAssistant":
+    elif userType == "StoreAssistant" or userType == "Admin":
         bookingLookUp(driver, user, userType)
     else:
         print("")
@@ -63,7 +63,7 @@ def bookItems(driver, user, userType, item):
     
     time.sleep(shortDelay())
     
-    booking_item = driver.find_element(By.CLASS_NAME, "booking-option-image")
+    booking_item = driver.find_element(By.CLASS_NAME, "booking-options-card")
     booking_item.click()
     
     time.sleep(longDelay())
@@ -134,8 +134,8 @@ def bookingLookUp(driver, user, userType):
     actions.move_to_element(store_desk).perform()
     store_desk.click()
 
-    time.sleep(shortDelay)
-    test = user
+    time.sleep(shortDelay())
+    test = "testinggamesstudent@test.ac.uk"
     bookedto_search = driver.find_element(By.ID, "bookedto_search")
     for i in test:
         bookedto_search.send_keys(i)
