@@ -148,10 +148,11 @@ def bookItems(driver, wait, user, userType, item):
     
     print (dateSelection())
     #! This is not working in the return date selection???? 
-    select_date = driver.find_element(By.CSS_SELECTOR, f"[aria-label='{select_friday}']")
-    select_date.click()
+    return_date = driver.find_element(By.ID, "return-overlay")
+    select_return_date = return_date.find_element(By.CSS_SELECTOR, f"[aria-label='{select_friday}']")
+    select_return_date.click()
     
-    time.sleep(10)
+    #time.sleep(10)
     time.sleep(shortDelay())
     
     # Find the dropdown element
@@ -162,23 +163,23 @@ def bookItems(driver, wait, user, userType, item):
     
     time.sleep(shortDelay())
     
-    next = driver.find_element(By.CSS_SELECTOR, "[aria-label='Next']")
-    next.click()
+    #! This is also not working
+    #nextReturn = select_start_date.find_element(By.XPATH, "./following-sibling::div[@id='dtp_return_log']")
+    nextReturn = return_date.find_element(By.CSS_SELECTOR, "[aria-label='Next']")
+    #nextReturn = driver.find_element(By.CLASS_NAME, "form-button")
+    nextReturn.click()
     
-    time.sleep(shortDelay())
-    
-    time.sleep(100)
-
     time.sleep(longDelay())
     
     
     check_avalibility = driver.find_element(By.CSS_SELECTOR, "[aria-label='Check Availability']")
     check_avalibility.click()
     
-    time.sleep(shortDelay())
-    time.sleep(30)
-    backet_booking = driver.find_element(By.CSS_SELECTOR, "[aria-label]='Book'")
-    backet_booking.click()
+    time.sleep(longDelay())
+    
+    booking = driver.find_element(By.ID, "basket-review-content")
+    basket_booking = booking.find_element(By.CSS_SELECTOR, "[aria-label]='Book'")
+    basket_booking.click()
     
     time.sleep(shortDelay())
     
