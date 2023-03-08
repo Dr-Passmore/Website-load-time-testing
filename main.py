@@ -12,10 +12,13 @@ from random import randint
 import logging
 import csv
 from datetime import datetime
+import datetime as dt
+from timeit import default_timer as timer
 
 #import of secrets
 import secrets
 csvFile = './LoadingTimeResults.csv'
+
 
 
 
@@ -25,6 +28,8 @@ def load_time_testing(user, userType, passwordSecret, item):
     '''
     logging.info(f"Starting test with {user}")
     driver = webdriver.Chrome()
+    #Sets wait time to 5 minutes for page element to load
+    wait = WebDriverWait(driver, 300)
     driver.get(secrets.target_url)
     driver.maximize_window()
     time.sleep(shortDelay())
@@ -45,25 +50,31 @@ def load_time_testing(user, userType, passwordSecret, item):
     time.sleep(1)
 
     #press login
+    start = timer()
+    process = "Login to Dashboard"
     login = driver.find_element(By.ID, "login")
     login.click()
+    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "dashboard-outer-wrapper")))
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded)
     logging.info("logged into system")
     time.sleep(longDelay())
     if userType == "Student":
-        bookItems(driver, user, userType, item)
+        bookItems(driver, wait, user, userType, item)
     elif userType == "StoreAssistant" or userType == "Admin":
-        bookingLookUp(driver, user, userType)
+        bookingLookUp(driver, wait, user, userType)
     else:
         print("")
         
-def bookItems(driver, user, userType, item):
-    print("test bookItems")
+def bookItems(driver, wait, user, userType, item):
+    #user accounts will book items following the key 
     booking = driver.find_element(By.LINK_TEXT, "Book")
     booking.click()
     
     time.sleep(shortDelay())
     
-    booking_item = driver.find_element(By.CLASS_NAME, "booking-options-card")
+    booking_item = driver.find_element(By.ID, "basket-title")
     booking_item.click()
     
     time.sleep(longDelay())
@@ -71,33 +82,56 @@ def bookItems(driver, user, userType, item):
     booking_searchbar = driver.find_element(By.ID, "asearch")
     for i in item:
         booking_searchbar.send_keys(i)
+        time.sleep(0.1)
     
-    start = time.time()
+    process = "Search for item"
+    start = timer()
     booking_searchbar.send_keys(Keys.ENTER)
     
-    wait = WebDriverWait(driver, 60)
+    
     wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "asset-item")))
    
-    end = time.time()
-    load_time_recorded = end-start
-    
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded)
     time.sleep(0.5)
+    process = f"{item} look up time"
+    start = timer()
     
-    book_item = driver.find_element(By.CSS_SELECTOR, "[aria-label='Add to Basket']")
+    book_item = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "[aria-label='Add to Basket']")))
     book_item.click()
     
-    time.sleep(0.5)
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded)
+    #time.sleep(0.5)
+    time.sleep(10)
     
     basket = driver.find_element(By.CSS_SELECTOR, "[aria-label='Basket']")
     basket.click()
     
     time.sleep(shortDelay())
     
+  
+    select_start_date = driver.find_element(By.ID, "dtp_collection_log")
+    
+    select_start_date.click()
+    
+    time.sleep(shortDelay())
+    
+    select_friday = dateSelection()
+    select_date = driver.find_element(By.CSS_SELECTOR, f"[aria-label='{select_friday}']")
+    select_date.click()
+    time.sleep(100)
+
+    time.sleep(longDelay())
+    
+    
     check_avalibility = driver.find_element(By.CSS_SELECTOR, "[aria-label='Check Availability']")
     check_avalibility.click()
     
     time.sleep(shortDelay())
-    
+    time.sleep(30)
     backet_booking = driver.find_element(By.CSS_SELECTOR, "[aria-label]='Book'")
     backet_booking.click()
     
@@ -152,7 +186,7 @@ def bookingLookUp(driver, user, userType):
     #TODO cancel booking
     updateCSV(user, userType, load_time_recorded)
     
-def updateCSV(user, userType, load_time_recorded):
+def updateCSV(user, userType, process, load_time_recorded):
     '''
     Writes new results to CSV output
     '''
@@ -167,6 +201,7 @@ def updateCSV(user, userType, load_time_recorded):
                current_time,
                user, 
                userType,
+               process,
                load_time_recorded]
     
     with open("LoadingTimeResults.csv", "a", newline='') as csvFile:
@@ -188,6 +223,33 @@ def shortDelay():
     '''
     return randint(1, 3)
 
+def dateSelection():
+    # Get today's date
+    currentday = dt.date.today()
+
+    # Calculate the next Friday
+    friday = currentday + dt.timedelta((4 - currentday.weekday()) % 7)
+
+    # Format the date as "Fri, Mar 17th 2023"
+    friday_str = friday.strftime("%a, %b %d")
+
+    # Add "st", "nd", "rd", or "th" to the day based on its value
+    if friday.day in [1, 21, 31]:
+        friday_str += "st"
+    elif friday.day in [2, 22]:
+        friday_str += "nd"
+    elif friday.day in [3, 23]:
+        friday_str += "rd"
+    else:
+        friday_str += "th"
+
+    # Add the year to the date string
+    friday_str += " " + str(friday.year)
+
+    return friday_str
+
+
+print(dateSelection())
 passwordSecret = secrets.password
 
 logging.basicConfig(filename='testing.log', 
