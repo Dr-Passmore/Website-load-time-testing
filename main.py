@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 
 #import of other python modules
 import time
@@ -110,7 +111,7 @@ def bookItems(driver, wait, user, userType, item):
     basket = driver.find_element(By.CSS_SELECTOR, "[aria-label='Basket']")
     basket.click()
     
-    time.sleep(shortDelay())
+    time.sleep(longDelay())
     
   
     select_start_date = driver.find_element(By.ID, "dtp_collection_log")
@@ -122,6 +123,50 @@ def bookItems(driver, wait, user, userType, item):
     select_friday = dateSelection()
     select_date = driver.find_element(By.CSS_SELECTOR, f"[aria-label='{select_friday}']")
     select_date.click()
+    
+    time.sleep(shortDelay())
+    
+    # Find the dropdown element
+    select_time = Select(driver.find_element(By.ID, "collection-time"))
+
+    time.sleep(shortDelay())
+    # Select the option with value "11:00:00"
+    select_time.select_by_value("11:00:00")
+    
+    time.sleep(shortDelay())
+    
+    next = driver.find_element(By.CSS_SELECTOR, "[aria-label='Next']")
+    next.click()
+    
+    time.sleep(shortDelay())
+    
+    select_end_date = driver.find_element(By.ID, "dtp_return_log")
+    select_end_date.click()
+    
+    time.sleep(longDelay())
+    
+    
+    print (dateSelection())
+    #! This is not working in the return date selection???? 
+    select_date = driver.find_element(By.CSS_SELECTOR, f"[aria-label='{select_friday}']")
+    select_date.click()
+    
+    time.sleep(10)
+    time.sleep(shortDelay())
+    
+    # Find the dropdown element
+    select_time = Select(driver.find_element(By.ID, "return-time"))
+
+    # Select the option with value "11:00:00"
+    select_time.select_by_value("11:45:00")
+    
+    time.sleep(shortDelay())
+    
+    next = driver.find_element(By.CSS_SELECTOR, "[aria-label='Next']")
+    next.click()
+    
+    time.sleep(shortDelay())
+    
     time.sleep(100)
 
     time.sleep(longDelay())
@@ -228,7 +273,7 @@ def dateSelection():
     currentday = dt.date.today()
 
     # Calculate the next Friday
-    friday = currentday + dt.timedelta((4 - currentday.weekday()) % 7)
+    friday = currentday + dt.timedelta((4 - currentday.weekday()) % 7 + 7)
 
     # Format the date as "Fri, Mar 17th 2023"
     friday_str = friday.strftime("%a, %b %d")
