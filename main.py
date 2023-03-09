@@ -101,6 +101,8 @@ def bookItems(driver, wait, user, userType, item):
     updateCSV(user, userType, process, load_time_recorded)
     logging.info("Search completed")
     
+    time.sleep(shortDelay())
+    
     #Timing until item becomes bookable
     process = f"{item} look up time"
     start = timer()
