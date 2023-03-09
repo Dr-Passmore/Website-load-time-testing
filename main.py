@@ -79,50 +79,56 @@ def bookItems(driver, wait, user, userType, item):
     
     time.sleep(shortDelay())
     
+    #Selects "By items"
     booking_item = driver.find_element(By.ID, "basket-title")
     booking_item.click()
     
     time.sleep(longDelay())
     
+    #Search menu - typing in the item
     booking_searchbar = driver.find_element(By.ID, "asearch")
     for i in item:
         booking_searchbar.send_keys(i)
         time.sleep(0.1)
     
+    #hitting enter timing search
     process = "Search for item"
     start = timer()
     booking_searchbar.send_keys(Keys.ENTER)
-    
-    
     wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "asset-item")))
-   
     end = timer()
     load_time_recorded = round(end-start, 2)
     updateCSV(user, userType, process, load_time_recorded)
-    time.sleep(0.5)
+    logging.info("Search completed")
+    
+    #Timing until item becomes bookable
     process = f"{item} look up time"
     start = timer()
-    
     book_item = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "[aria-label='Add to Basket']")))
     book_item.click()
-    
     end = timer()
     load_time_recorded = round(end-start, 2)
     updateCSV(user, userType, process, load_time_recorded)
-    #time.sleep(0.5)
-    time.sleep(10)
-    
-    basket = driver.find_element(By.CSS_SELECTOR, "[aria-label='Basket']")
-    basket.click()
-    
-    time.sleep(longDelay())
-    
+    logging.info(f"{item} selected for booking")
   
-    select_start_date = driver.find_element(By.ID, "dtp_collection_log")
+    time.sleep(shortDelay())
     
+    #Moving to the basket
+    basket = driver.find_element(By.CSS_SELECTOR, "[aria-label='Basket']")
+    process = "Basket load time"
+    start = timer()
+    basket.click()
+    select_start_date = wait.until(EC.visibility_of_element_located((By.ID, "dtp_collection_log")))
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded)
+    #select_start_date = driver.find_element(By.ID, "dtp_collection_log")
+    #Select collection
     select_start_date.click()
+    logging.info(f"basket has loaded after {load_time_recorded} seconds")
     
     time.sleep(shortDelay())
+    
     
     select_friday = dateSelection()
     select_date = driver.find_element(By.CSS_SELECTOR, f"[aria-label='{select_friday}']")
@@ -171,25 +177,43 @@ def bookItems(driver, wait, user, userType, item):
     #nextReturn = select_start_date.find_element(By.XPATH, "./following-sibling::div[@id='dtp_return_log']")
     nextReturn = return_date.find_element(By.CSS_SELECTOR, "[aria-label='Next']")
     #nextReturn = driver.find_element(By.CLASS_NAME, "form-button")
+    
+    process = "Return date and Time Selected"
+    start = timer()
     nextReturn.click()
+    check_avalibility = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "[aria-label='Check Availability']")))
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded)
+    logging.info(f"Return date and Time Selected after {load_time_recorded}")
     
-    time.sleep(longDelay())
+    time.sleep(shortDelay())
     
     
-    check_avalibility = driver.find_element(By.CSS_SELECTOR, "[aria-label='Check Availability']")
+    process = "Avalibility Check"
+    start = timer()
     check_avalibility.click()
+    booking = wait.until(EC.visibility_of_element_located((By.ID, "basket-review-content"))) 
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded)
+    logging.info("Avalibility check completed")
     
     time.sleep(longDelay())
-    print("check")
-   
-    booking = driver.find_element(By.ID, "basket-review-content")
+    
     basket_booking = booking.find_element(By.CSS_SELECTOR, "[aria-label='Book']")
+    
+    process = "Booking made"
+    start = timer()
     basket_booking.click()
     
-    
-    time.sleep(longDelay())
      
-    terms_toggle = driver.find_element(By.CSS_SELECTOR, "label[for='basket_terms']")
+    #terms_toggle = driver.find_element(By.CSS_SELECTOR, "label[for='basket_terms']")
+    terms_toggle = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "label[for='basket_terms']")))
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded)
+    logging.info("Booking form loaded")
     terms_toggle.click()
     
     time.sleep(shortDelay())
@@ -307,7 +331,6 @@ def dateSelection():
     return friday_str
 
 
-print(dateSelection())
 passwordSecret = secrets.password
 
 logging.basicConfig(filename='testing.log', 
