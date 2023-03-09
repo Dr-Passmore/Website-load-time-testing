@@ -55,7 +55,10 @@ def load_time_testing(user, userType, passwordSecret, item):
     process = "Login to Dashboard"
     login = driver.find_element(By.ID, "login")
     login.click()
-    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "dashboard-outer-wrapper")))
+    if userType == "Admin":
+        wait.until(EC.visibility_of_element_located((By.ID, "form_panel_icons")))
+    else:     
+        wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "dashboard-outer-wrapper")))
     end = timer()
     load_time_recorded = round(end-start, 2)
     updateCSV(user, userType, process, load_time_recorded)
@@ -63,10 +66,11 @@ def load_time_testing(user, userType, passwordSecret, item):
     time.sleep(longDelay())
     if userType == "Student":
         bookItems(driver, wait, user, userType, item)
-    elif userType == "StoreAssistant" or userType == "Admin":
+    elif userType == "StoreAssistant":
         bookingLookUp(driver, wait, user, userType)
     else:
-        print("")
+        print("admin")
+        driver.quit()
         
 def bookItems(driver, wait, user, userType, item):
     #user accounts will book items following the key 
@@ -133,7 +137,7 @@ def bookItems(driver, wait, user, userType, item):
     # Select the option with value "11:00:00"
     select_time.select_by_value("11:00:00")
     
-    time.sleep(shortDelay())
+    time.sleep(longDelay())
     
     next = driver.find_element(By.CSS_SELECTOR, "[aria-label='Next']")
     next.click()
@@ -147,13 +151,13 @@ def bookItems(driver, wait, user, userType, item):
     
     
     print (dateSelection())
-    #! This is not working in the return date selection???? 
+    
     return_date = driver.find_element(By.ID, "return-overlay")
     select_return_date = return_date.find_element(By.CSS_SELECTOR, f"[aria-label='{select_friday}']")
     select_return_date.click()
     
     #time.sleep(10)
-    time.sleep(shortDelay())
+    time.sleep(longDelay())
     
     # Find the dropdown element
     select_time = Select(driver.find_element(By.ID, "return-time"))
@@ -163,7 +167,7 @@ def bookItems(driver, wait, user, userType, item):
     
     time.sleep(shortDelay())
     
-    #! This is also not working
+    
     #nextReturn = select_start_date.find_element(By.XPATH, "./following-sibling::div[@id='dtp_return_log']")
     nextReturn = return_date.find_element(By.CSS_SELECTOR, "[aria-label='Next']")
     #nextReturn = driver.find_element(By.CLASS_NAME, "form-button")
@@ -176,30 +180,38 @@ def bookItems(driver, wait, user, userType, item):
     check_avalibility.click()
     
     time.sleep(longDelay())
-    
+    print("check")
+   
     booking = driver.find_element(By.ID, "basket-review-content")
-    basket_booking = booking.find_element(By.CSS_SELECTOR, "[aria-label]='Book'")
+    basket_booking = booking.find_element(By.CSS_SELECTOR, "[aria-label='Book']")
     basket_booking.click()
+    
+    
+    time.sleep(longDelay())
+     
+    terms_toggle = driver.find_element(By.CSS_SELECTOR, "label[for='basket_terms']")
+    terms_toggle.click()
     
     time.sleep(shortDelay())
     
-    terms_toggle = driver.find_element(By.ID, "basket_terms")
-    terms_toggle.click()
     
-    time.sleep(0.2)
-    
-    book = driver.find_element(By.CSS_SELECTOR, "[aria-label]='Book'")
+    booking_form = driver.find_element(By.ID, "basket-form-content")
+    book = booking_form.find_element(By.CSS_SELECTOR, "[aria-label='Book']")
     book.click()
     
-    time.sleep(longDelay)
+    time.sleep(longDelay())
     
-    updateCSV(user, userType, load_time_recorded)
+    #updateCSV(user, userType, load_time_recorded)
     
-def bookingLookUp(driver, user, userType):
+    print("order completed")
+    
+    driver.quit()
+    
+def bookingLookUp(driver, wait, user, userType):
     page_menu = driver.find_element(By.ID, "page-menu")
     page_menu.click()
 
-    time.sleep(0.5)
+    time.sleep(shortDelay())
 
     booking_management = driver.find_element(By.CSS_SELECTOR, "[aria-label='Booking Management']")
     booking_management.click()
@@ -308,6 +320,7 @@ for i in secrets.username:
     user = i[0]
     userType = i[1]
     item = i[2]
+    time.sleep(5)
     load_time_testing(user, userType, passwordSecret, item)
     #updateCSV(user, userType, load_time_recorded)
     
