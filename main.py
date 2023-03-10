@@ -113,7 +113,7 @@ def bookItems(driver, wait, user, userType, item):
     updateCSV(user, userType, process, load_time_recorded)
     logging.info(f"{item} selected for booking")
   
-    time.sleep(shortDelay())
+    time.sleep(longDelay())
     
     #Moving to the basket
     basket = driver.find_element(By.CSS_SELECTOR, "[aria-label='Basket']")
@@ -143,7 +143,8 @@ def bookItems(driver, wait, user, userType, item):
 
     time.sleep(shortDelay())
     # Select the option with value "11:00:00"
-    select_time.select_by_value("11:00:00")
+    #select_time.select_by_value("11:00:00")
+    select_time.select_by_value("09:30:00")
     
     time.sleep(longDelay())
     
@@ -171,7 +172,8 @@ def bookItems(driver, wait, user, userType, item):
     select_time = Select(driver.find_element(By.ID, "return-time"))
 
     # Select the option with value "11:00:00"
-    select_time.select_by_value("11:45:00")
+    #select_time.select_by_value("11:45:00")
+    select_time.select_by_value("10:30:00")
     
     time.sleep(shortDelay())
     
@@ -270,6 +272,10 @@ def bookingLookUp(driver, wait, user, userType):
     #TODO cancel booking
     updateCSV(user, userType, load_time_recorded)
     
+def cleanupPartlyCompleted(driver, wait, user, userType):
+    print("test")
+    #! Required for failures going to basket or failure to complete order
+    
 def updateCSV(user, userType, process, load_time_recorded):
     '''
     Writes new results to CSV output
@@ -297,15 +303,15 @@ def updateCSV(user, userType, process, load_time_recorded):
     
 def longDelay():
     '''
-    Provides a random delay between 3 and 7 seconds
+    Provides a random delay between 5 and 10 seconds
     '''
-    return randint(3,7)
+    return randint(5,10)
 
 def shortDelay():
     '''
-    Provides a random delay between 1 and 3 seconds
+    Provides a random delay between 2 and 4 seconds
     '''
-    return randint(1, 3)
+    return randint(2, 4)
 
 def dateSelection():
     # Get today's date
@@ -340,12 +346,14 @@ logging.basicConfig(filename='testing.log',
                     level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
-load_time_recorded = 2
-for i in secrets.username:
-    user = i[0]
-    userType = i[1]
-    item = i[2]
-    time.sleep(5)
-    load_time_testing(user, userType, passwordSecret, item)
-    #updateCSV(user, userType, load_time_recorded)
+loops = 5
+
+for i in range(loops):
+    for i in secrets.username:
+        user = i[0]
+        userType = i[1]
+        item = i[2]
+        time.sleep(5)
+        load_time_testing(user, userType, passwordSecret, item)
+        #updateCSV(user, userType, load_time_recorded)
     
