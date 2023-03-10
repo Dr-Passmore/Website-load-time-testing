@@ -399,7 +399,7 @@ passwordSecret = secrets.password
 
 logging.basicConfig(filename='testing.log', 
                     filemode='a', 
-                    level=logging.INFO,
+                    level=logging.ERROR,
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 loops = 5
