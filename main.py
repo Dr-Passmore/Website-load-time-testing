@@ -310,7 +310,7 @@ def deleteBooking (driver, wait, user, userType, environment):
     for i in testingNote:
             cancelReason.send_keys(i)
             time.sleep(0.1)
-    completeCancel = driver.find_element(By.CSS_SELECTOR, "[aria-label='Cancel Booking]")
+    completeCancel = driver.find_element(By.CSS_SELECTOR, "[aria-label='Cancel Booking']")
     completeCancel.click()
     
     time.sleep(longDelay())
