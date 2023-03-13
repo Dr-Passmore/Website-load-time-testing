@@ -36,6 +36,11 @@ def load_time_testing(user, userType, passwordSecret, item):
     time.sleep(shortDelay())
     logging.info("login page")
     
+    if 'demo' in secrets.target_url:
+        environment = "UAT"
+    else:
+        environment = "Live"
+    
     #input username
     username = driver.find_element(By.ID, "uname")
     for i in user:
@@ -61,18 +66,31 @@ def load_time_testing(user, userType, passwordSecret, item):
         wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "dashboard-outer-wrapper")))
     end = timer()
     load_time_recorded = round(end-start, 2)
-    updateCSV(user, userType, process, load_time_recorded)
+    updateCSV(user, userType, process, load_time_recorded,environment)
     logging.info("logged into system")
     time.sleep(longDelay())
     if userType == "Student":
-        bookItems(driver, wait, user, userType, item, passwordSecret)
+        bookItems(driver, wait, user, userType, item, passwordSecret, environment)
     elif userType == "StoreAssistant":
-        bookingLookUp(driver, wait, user, userType)
+        bookingLookUp(driver, wait, user, userType, environment)
     else:
         print("admin")
         driver.quit()
         
-def bookItems(driver, wait, user, userType, item, passwordSecret):
+def bookItems(driver, wait, user, userType, item, passwordSecret, environment):
+    '''
+    Books items as a student. Each student will book a preselected item found in the Secrets file.
+    
+    The following variables are passed from the load_time_testing function:
+    - driver
+    - wait
+    - user
+    - userType
+    - item
+    - passwordSecret
+    - environment
+    '''
+    
     try:
         #user accounts will book items following the key 
         booking = driver.find_element(By.LINK_TEXT, "Book")
@@ -99,7 +117,7 @@ def bookItems(driver, wait, user, userType, item, passwordSecret):
         wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "asset-item")))
         end = timer()
         load_time_recorded = round(end-start, 2)
-        updateCSV(user, userType, process, load_time_recorded)
+        updateCSV(user, userType, process, load_time_recorded, environment)
         logging.info("Search completed")
         
         time.sleep(shortDelay())
@@ -112,7 +130,7 @@ def bookItems(driver, wait, user, userType, item, passwordSecret):
         book_item.click()
         end = timer()
         load_time_recorded = round(end-start, 2)
-        updateCSV(user, userType, process, load_time_recorded)
+        updateCSV(user, userType, process, load_time_recorded, environment)
         logging.info(f"{item} selected for booking")
     
         time.sleep(longDelay())
@@ -130,7 +148,7 @@ def bookItems(driver, wait, user, userType, item, passwordSecret):
         select_start_date = wait.until(EC.visibility_of_element_located((By.ID, "dtp_collection_log")))
         end = timer()
         load_time_recorded = round(end-start, 2)
-        updateCSV(user, userType, process, load_time_recorded)
+        updateCSV(user, userType, process, load_time_recorded, environment)
         #select_start_date = driver.find_element(By.ID, "dtp_collection_log")
         #Select collection
         select_start_date.click()
@@ -195,7 +213,7 @@ def bookItems(driver, wait, user, userType, item, passwordSecret):
         check_avalibility = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "[aria-label='Check Availability']")))
         end = timer()
         load_time_recorded = round(end-start, 2)
-        updateCSV(user, userType, process, load_time_recorded)
+        updateCSV(user, userType, process, load_time_recorded, environment)
         logging.info(f"Return date and Time Selected after {load_time_recorded}")
         
         time.sleep(shortDelay())
@@ -207,14 +225,14 @@ def bookItems(driver, wait, user, userType, item, passwordSecret):
         booking = wait.until(EC.visibility_of_element_located((By.ID, "basket-review-content"))) 
         end = timer()
         load_time_recorded = round(end-start, 2)
-        updateCSV(user, userType, process, load_time_recorded)
+        updateCSV(user, userType, process, load_time_recorded, environment)
         logging.info("Avalibility check completed")
         
         time.sleep(longDelay())
         
         basket_booking = booking.find_element(By.CSS_SELECTOR, "[aria-label='Book']")
         
-        process = "Booking made"
+        process = "Booking button pressed"
         start = timer()
         basket_booking.click()
         
@@ -223,7 +241,7 @@ def bookItems(driver, wait, user, userType, item, passwordSecret):
         terms_toggle = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "label[for='basket_terms']")))
         end = timer()
         load_time_recorded = round(end-start, 2)
-        updateCSV(user, userType, process, load_time_recorded)
+        updateCSV(user, userType, process, load_time_recorded, environment)
         logging.info("Booking form loaded")
         terms_toggle.click()
         
@@ -231,6 +249,11 @@ def bookItems(driver, wait, user, userType, item, passwordSecret):
         
         
         booking_form = driver.find_element(By.ID, "basket-form-content")
+        booking_note = booking_form.findelement(By.ID, "basket_notes")
+        testingNote = f"performance testing - item booked '{item}' on {datetime.now().date} by Dr Passmore"
+        for i in testingNote:
+            booking_note.send_keys(i)
+            time.sleep(0.1)
         book = booking_form.find_element(By.CSS_SELECTOR, "[aria-label='Book']")
         book.click()
         
@@ -243,12 +266,9 @@ def bookItems(driver, wait, user, userType, item, passwordSecret):
         driver.quit()
     except:
         logging.error("Failed to book item")
-        cleanupPartlyCompleted(driver, wait, user, userType, item)
+        cleanupPartlyCompleted(driver, wait, user, userType, item, environment)
         
-        
-        
-    
-def bookingLookUp(driver, wait, user, userType):
+def bookingLookUp(driver, wait, user, userType, environment):
     page_menu = driver.find_element(By.ID, "page-menu")
     page_menu.click()
 
@@ -285,8 +305,22 @@ def bookingLookUp(driver, wait, user, userType):
     #TODO cancel booking
     updateCSV(user, userType, load_time_recorded)
     
-def cleanupPartlyCompleted(driver, wait, user, userType, item):
+def cleanupPartlyCompleted(driver, wait, user, userType, item, environment):
+    '''
+    The cleanupPartlyCompleted function exists to deal with failures to complete bookings. 
     
+    If the item is in a basket then the search process will show the item but with an "Update icon" rather than book. 
+    
+    This process removes the failed item from basket and then restarts the process. 
+    
+    Varibles passed to cleanupPartlyCompleted by bookItems function includes:
+    - driver
+    - wait
+    - user
+    - userType
+    - item
+    - environment
+    '''
     #! Required for failures going to basket or failure to complete order
     
     
@@ -315,7 +349,7 @@ def cleanupPartlyCompleted(driver, wait, user, userType, item):
     wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "asset-item")))
     end = timer()
     load_time_recorded = round(end-start, 2)
-    updateCSV(user, userType, process, load_time_recorded)
+    updateCSV(user, userType, process, load_time_recorded, environment)
     logging.info("Search completed")
     
     time.sleep(shortDelay())
@@ -332,7 +366,7 @@ def cleanupPartlyCompleted(driver, wait, user, userType, item):
     
     load_time_testing(user, userType, passwordSecret, item)
 
-def updateCSV(user, userType, process, load_time_recorded):
+def updateCSV(user, userType, process, load_time_recorded, environment):
     '''
     Writes new results to CSV output
     '''
@@ -347,6 +381,7 @@ def updateCSV(user, userType, process, load_time_recorded):
                current_time,
                user, 
                userType,
+               environment,
                process,
                load_time_recorded]
     
