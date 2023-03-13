@@ -249,8 +249,9 @@ def bookItems(driver, wait, user, userType, item, passwordSecret, environment):
         
         
         booking_form = driver.find_element(By.ID, "basket-form-content")
-        booking_note = booking_form.findelement(By.ID, "basket_notes")
-        testingNote = f"performance testing - item booked '{item}' on {datetime.now().date} by Dr Passmore"
+        booking_note = booking_form.find_element(By.XPATH, '//*[@id="basket_notes"]')
+        booking_note.click()
+        testingNote = f"performance testing - item booked '{item}' on {datetime.now().date()} by Dr Passmore"
         for i in testingNote:
             booking_note.send_keys(i)
             time.sleep(0.1)
@@ -263,13 +264,61 @@ def bookItems(driver, wait, user, userType, item, passwordSecret, environment):
         
         print("order completed")
         
-        driver.quit()
+        deleteBooking(driver, wait, user, userType, environment)
+        
     except:
         logging.error("Failed to book item")
         cleanupPartlyCompleted(driver, wait, user, userType, item, environment)
         
+def deleteBooking (driver, wait, user, userType, environment):
+    '''
+    Clears booking once created
+    '''
+    time.sleep(longDelay())
+    dashboard = driver.find_element(By.XPATH, '//*[@id="side-nav"]/span[2]/a/span/span[1]')
+    
+    start = timer()
+    process = "Return to Dashboard"
+    dashboard.click()     
+    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "dashboard-outer-wrapper")))
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded,environment)
+    logging.info("Returned to dashboard")
+    
+    my_booking = driver.find_element(By.LINK_TEXT, "My Bookings")
+    process = "Load My Bookings Page"
+    start = timer()
+    my_booking.click()
+    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "booking-group-card")))
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded,environment)
+    logging.info("My bookings page loaded")
+    
+    time.sleep(longDelay())
+        
+    cancel_all = driver.find_element(By.CSS_SELECTOR, "[aria-label='Cancel All']")
+    time.sleep(shortDelay())
+    cancel_all.click()
+    
+    wait.until(EC.visibility_of_element_located((By.ID, "cancel-booking-content")))
+    time.sleep(shortDelay())
+    cancelReason = driver.find_element(By.ID, "cancel-notes")
+    cancelReason.click()
+    testingNote = f"performance testing - item '{item}' cancelled on {datetime.now().date()} by Dr Passmore"
+    for i in testingNote:
+            cancelReason.send_keys(i)
+            time.sleep(0.1)
+    completeCancel = driver.find_element(By.CSS_SELECTOR, "[aria-label='Cancel Booking]")
+    completeCancel.click()
+    
+    time.sleep(longDelay())
+    driver.quit()
+        
 def bookingLookUp(driver, wait, user, userType, environment):
     page_menu = driver.find_element(By.ID, "page-menu")
+    
     page_menu.click()
 
     time.sleep(shortDelay())
@@ -304,6 +353,11 @@ def bookingLookUp(driver, wait, user, userType, environment):
     
     #TODO cancel booking
     updateCSV(user, userType, load_time_recorded)
+    
+
+    
+    
+    
     
 def cleanupPartlyCompleted(driver, wait, user, userType, item, environment):
     '''
@@ -363,6 +417,8 @@ def cleanupPartlyCompleted(driver, wait, user, userType, item, environment):
     update_button.click()
     
     time.sleep(shortDelay())
+    
+    driver.quit()
     
     load_time_testing(user, userType, passwordSecret, item)
 
