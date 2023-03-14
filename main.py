@@ -60,8 +60,9 @@ def load_time_testing(user, userType, passwordSecret, item):
     process = "Login to Dashboard"
     login = driver.find_element(By.ID, "login")
     login.click()
-    if userType == "Admin":
+    if userType == "Admin" or userType == "StoreAssistant":
         wait.until(EC.visibility_of_element_located((By.ID, "form_panel_icons")))
+       
     else:     
         wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "dashboard-outer-wrapper")))
     end = timer()
@@ -72,7 +73,9 @@ def load_time_testing(user, userType, passwordSecret, item):
     if userType == "Student":
         bookItems(driver, wait, user, userType, item, passwordSecret, environment)
     elif userType == "StoreAssistant":
-        bookingLookUp(driver, wait, user, userType, environment)
+        #bookingLookUp(driver, wait, user, userType, environment)
+        storeAssistantProcess(driver, wait, user, userType, item, environment)
+        print("Store Assistant")
     else:
         print("admin")
         driver.quit()
@@ -314,9 +317,46 @@ def deleteBooking (driver, wait, user, userType, environment):
     completeCancel = cancelForm.find_element(By.CSS_SELECTOR, "[aria-label='Cancel Booking']")
     completeCancel.click()
     
-    time.sleep(longDelay())
+    time.sleep(15)
     driver.quit()
-        
+
+def storeAssistantProcess(driver, wait, user, userType, item, environment):
+    
+    logging.info("Store assistant process started")
+    assetManagementPage(driver, wait, user, userType, environment)
+    
+    
+def assetManagementPage(driver, wait, user, userType, environment):
+    logging.info("Asset Management Page selection")
+    page_menu = driver.find_element(By.ID, "page-menu")
+    
+    page_menu.click()
+
+    time.sleep(shortDelay())
+
+    booking_management = driver.find_element(By.CSS_SELECTOR, "[aria-label='Assets']")
+    booking_management.click()
+    
+    time.sleep(shortDelay())
+    
+    booking_management = driver.find_element(By.XPATH, '//*[@id="docMainMenuSub"]/div[2]/a')
+    
+    process = "Load Asset Management Table"
+    start = timer()
+    
+    booking_management.click()
+    
+    
+    wait.until(EC.visibility_of_element_located((By.ID, "stockGrid_frame")))
+    
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded, environment)
+    logging.info(f"Asset Manager Table Loaded after {load_time_recorded} seconds")
+    
+    time.sleep(100)
+          
+#! new approach
 def bookingLookUp(driver, wait, user, userType, environment):
     page_menu = driver.find_element(By.ID, "page-menu")
     
@@ -491,7 +531,7 @@ passwordSecret = secrets.password
 
 logging.basicConfig(filename='testing.log', 
                     filemode='a', 
-                    level=logging.ERROR,
+                    level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 loops = 5
