@@ -325,6 +325,23 @@ def storeAssistantProcess(driver, wait, user, userType, item, environment):
     logging.info("Store assistant process started")
     assetManagementPage(driver, wait, user, userType, environment)
     
+    time.sleep(shortDelay())
+    
+    charges_table(driver, wait, user, userType, environment)
+    
+    time.sleep(shortDelay())
+
+    paymentsPage(driver, wait, user, userType, environment)
+
+    time.sleep(shortDelay())
+    
+    manageUsers(driver, wait, user, userType, environment)
+    
+    time.sleep(100)
+    driver.quit()
+    logging.info("Store assistant process completed")
+    
+    
     
 def assetManagementPage(driver, wait, user, userType, environment):
     logging.info("Asset Management Page selection")
@@ -347,15 +364,86 @@ def assetManagementPage(driver, wait, user, userType, environment):
     booking_management.click()
     
     
-    wait.until(EC.visibility_of_element_located((By.ID, "stockGrid_frame")))
+    wait.until(EC.visibility_of_element_located((By.ID, "stockGrid_body")))
     
     end = timer()
     load_time_recorded = round(end-start, 2)
     updateCSV(user, userType, process, load_time_recorded, environment)
     logging.info(f"Asset Manager Table Loaded after {load_time_recorded} seconds")
+     
+def charges_table(driver, wait, user, userType, environment):
+
+    logging.info("Charges Table Page selection")
+    page_menu = driver.find_element(By.ID, "page-menu")
+    page_menu.click()
     
-    time.sleep(100)
-          
+    Tariffs = driver.find_element(By.CSS_SELECTOR, "[aria-label='Tariffs and Fines']")
+    Tariffs.click()
+    
+    time.sleep(shortDelay())
+    
+    Tariffs = driver.find_element(By.XPATH, '//*[@id="docMainMenuSub"]/div[3]/a')
+    
+    process = "Load Charges Table"
+    start = timer()
+    
+    Tariffs.click()
+    
+    wait.until(EC.visibility_of_element_located((By.ID, "chargesGrid_frame")))
+    
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded, environment)
+    logging.info(f"Charges Table Loaded after {load_time_recorded} seconds")
+    
+def paymentsPage(driver, wait, user, userType, environment):
+    logging.info("Payment Table Page selection")
+    page_menu = driver.find_element(By.ID, "page-menu")
+    page_menu.click()
+    
+    Tariffs = driver.find_element(By.CSS_SELECTOR, "[aria-label='Tariffs and Fines']")
+    Tariffs.click()
+    
+    time.sleep(shortDelay())
+    
+    Tariffs = driver.find_element(By.XPATH, '//*[@id="docMainMenuSub"]/div[4]/a')
+    
+    process = "Load Payment Table"
+    start = timer()
+    
+    Tariffs.click()
+    
+    wait.until(EC.visibility_of_element_located((By.ID, "paymentsGrid_body")))
+    
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded, environment)
+    logging.info(f"Payment Table Loaded after {load_time_recorded} seconds")
+    
+def manageUsers(driver, wait, user, userType, environment):
+    logging.info("Manage Users Page Selection")
+    page_menu = driver.find_element(By.ID, "page-menu")
+    page_menu.click()
+    
+    Tariffs = driver.find_element(By.CSS_SELECTOR, "[aria-label='Users']")
+    Tariffs.click()
+    
+    time.sleep(shortDelay())
+    
+    Tariffs = driver.find_element(By.XPATH, '//*[@id="docMainMenuSub"]/div[2]/a')
+    
+    process = "Load Manage Users Table"
+    start = timer()
+    
+    Tariffs.click()
+    
+    wait.until(EC.visibility_of_element_located((By.ID, "usersGrid_body")))
+    
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded, environment)
+    logging.info(f"Manage Users Table Loaded after {load_time_recorded} seconds")
+
 #! new approach
 def bookingLookUp(driver, wait, user, userType, environment):
     page_menu = driver.find_element(By.ID, "page-menu")
