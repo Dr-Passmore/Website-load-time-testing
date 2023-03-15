@@ -337,6 +337,10 @@ def storeAssistantProcess(driver, wait, user, userType, item, environment):
     
     manageUsers(driver, wait, user, userType, environment)
     
+    time.sleep(shortDelay())
+    
+    bookingManagement(driver, wait, user, userType, environment)
+    
     time.sleep(100)
     driver.quit()
     logging.info("Store assistant process completed")
@@ -444,6 +448,37 @@ def manageUsers(driver, wait, user, userType, environment):
     updateCSV(user, userType, process, load_time_recorded, environment)
     logging.info(f"Manage Users Table Loaded after {load_time_recorded} seconds")
 
+def bookingManagement(driver, wait, user, userType, environment):
+    try:
+        logging.info("Booking Management Page Selection")
+        page_menu = driver.find_element(By.ID, "page-menu")
+        page_menu.click()
+        
+        Tariffs = driver.find_element(By.CSS_SELECTOR, "[aria-label='Booking Management']")
+        Tariffs.click()
+        
+        time.sleep(shortDelay())
+        
+        Tariffs = driver.find_element(By.XPATH, '//*[@id="docMainMenuSub"]/div[2]/a')
+    except:
+        logging.error("Failed to Navigate to Booking Management Page Selection")
+    try:
+        process = "Load Booking Management Table"
+        start = timer()
+        
+        Tariffs.click()
+        
+        wait.until(EC.visibility_of_element_located((By.ID, "managebookingsGrid_body")))
+        
+        end = timer()
+        load_time_recorded = round(end-start, 2)
+        updateCSV(user, userType, process, load_time_recorded, environment)
+    except:
+        logging.error(f"Timeout - Over 5 minutes")
+        load_time_recorded = 300
+    logging.info(f"Booking Management Table Loaded after {load_time_recorded} seconds")
+    
+    
 #! new approach
 def bookingLookUp(driver, wait, user, userType, environment):
     page_menu = driver.find_element(By.ID, "page-menu")
