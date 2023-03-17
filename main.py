@@ -532,6 +532,8 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
         time.sleep(0.1)
     bookto.send_keys(Keys.ENTER)
     
+    time.sleep(shortDelay())
+    
     itemBooking = driver.find_element(By.XPATH, '//*[@id="collect_asset_search"]')
     itemBooking.click()
     for i in item:
@@ -539,15 +541,26 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
         time.sleep(0.1)
     itemBooking.send_keys(Keys.ENTER)
     
+    time.sleep(longDelay())
+    
+    itemlist = driver.find_element(By.CLASS_NAME, 'ua-search-list-item')
+    itemlist.click()
+    
+    
+    
+    
+    start = timer()
+    process = "Find item for adhoc booking"
+    returnTimeItem = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "[aria-label='Return Date']")))
+    
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded, environment)
     time.sleep(shortDelay())
+    #returnTimeItem.click()
     
-    selectItem = driver.find_element(By.XPATH, '//*[@id="collect_asset"]/div[2]/div[1]')
-    selectItem.click()
     
-    time.sleep(shortDelay())
-    
-    #! Content container  = //*[@id="sd-container-content"]/div[5]/div
-    #! aria-label="Return Date"
+  
     
     itemBooking.send_keys(Keys.PAGE_DOWN)
     
@@ -565,7 +578,6 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
     process = driver.find_element(By.XPATH, '//*[@id="sd-container-content"]/div[5]/div/div[8]/div/div/div/div/div/button')
     process.click()
     
-    time.sleep(100)
     
     time.sleep(longDelay())
     
