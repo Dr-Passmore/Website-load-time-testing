@@ -38,8 +38,10 @@ def load_time_testing(user, userType, passwordSecret, item):
     
     if 'demo' in secrets.target_url:
         environment = "UAT"
+        logging.info(f"Logging into the {environment} environment")
     else:
         environment = "Live"
+        logging.info(f"Logging into the {environment} environment")
     
     #input username
     username = driver.find_element(By.ID, "uname")
@@ -59,6 +61,7 @@ def load_time_testing(user, userType, passwordSecret, item):
     start = timer()
     process = "Login to Dashboard"
     login = driver.find_element(By.ID, "login")
+    logging.info("Logging into system")
     login.click()
     if userType == "Admin" or userType == "StoreAssistant":
         wait.until(EC.visibility_of_element_located((By.ID, "form_panel_icons")))
