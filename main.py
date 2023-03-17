@@ -75,9 +75,9 @@ def load_time_testing(user, userType, passwordSecret, item):
     elif userType == "StoreAssistant":
         #bookingLookUp(driver, wait, user, userType, environment)
         storeAssistantProcess(driver, wait, user, userType, item, environment)
-        print("Store Assistant")
+        
     else:
-        print("admin")
+        
         driver.quit()
         
 def bookItems(driver, wait, user, userType, item, passwordSecret, environment):
@@ -186,9 +186,6 @@ def bookItems(driver, wait, user, userType, item, passwordSecret, environment):
         
         time.sleep(longDelay())
         
-        
-        print (dateSelection())
-        
         return_date = driver.find_element(By.ID, "return-overlay")
         select_return_date = return_date.find_element(By.CSS_SELECTOR, f"[aria-label='{select_friday}']")
         select_return_date.click()
@@ -265,7 +262,7 @@ def bookItems(driver, wait, user, userType, item, passwordSecret, environment):
         
         #updateCSV(user, userType, load_time_recorded)
         
-        print("order completed")
+        logging.info("Booking has been completed")
         
         deleteBooking(driver, wait, user, userType, environment)
         
@@ -323,8 +320,6 @@ def deleteBooking (driver, wait, user, userType, environment):
 def storeAssistantProcess(driver, wait, user, userType, item, environment):
     
     logging.info("Store assistant process started")
-    
-    storeDeskBooking(driver, wait, user, userType, item, environment)
     
     assetManagementPage(driver, wait, user, userType, environment)
     
@@ -576,8 +571,7 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
     time.sleep(shortDelay())
     
     process = driver.find_element(By.XPATH, '//*[@id="sd-container-content"]/div[5]/div/div[8]/div/div/div/div/div/button')
-    process.click()
-    
+    #process.click()
     
     time.sleep(longDelay())
     
