@@ -323,6 +323,9 @@ def deleteBooking (driver, wait, user, userType, environment):
 def storeAssistantProcess(driver, wait, user, userType, item, environment):
     
     logging.info("Store assistant process started")
+    
+    storeDeskBooking(driver, wait, user, userType, item, environment)
+    
     assetManagementPage(driver, wait, user, userType, environment)
     
     time.sleep(shortDelay())
@@ -341,13 +344,20 @@ def storeAssistantProcess(driver, wait, user, userType, item, environment):
     
     bookingManagement(driver, wait, user, userType, environment)
     
-    time.sleep(100)
+    time.sleep(shortDelay())
+    
+    storeDeskBooking(driver, wait, user, userType, item, environment)
+    
+    time.sleep(longDelay())
     driver.quit()
     logging.info("Store assistant process completed")
     
     
     
 def assetManagementPage(driver, wait, user, userType, environment):
+    '''
+    Loads the Asset management page. Waits until the table has loaded and records load time.
+    '''
     logging.info("Asset Management Page selection")
     page_menu = driver.find_element(By.ID, "page-menu")
     
@@ -376,7 +386,9 @@ def assetManagementPage(driver, wait, user, userType, environment):
     logging.info(f"Asset Manager Table Loaded after {load_time_recorded} seconds")
      
 def charges_table(driver, wait, user, userType, environment):
-
+    '''
+    Loads the Charges page. Waits until the table has loaded and records load time.
+    '''
     logging.info("Charges Table Page selection")
     page_menu = driver.find_element(By.ID, "page-menu")
     page_menu.click()
@@ -401,6 +413,9 @@ def charges_table(driver, wait, user, userType, environment):
     logging.info(f"Charges Table Loaded after {load_time_recorded} seconds")
     
 def paymentsPage(driver, wait, user, userType, environment):
+    '''
+    Loads the Payments page. Waits until the table has loaded and records load time.
+    '''
     logging.info("Payment Table Page selection")
     page_menu = driver.find_element(By.ID, "page-menu")
     page_menu.click()
@@ -425,6 +440,10 @@ def paymentsPage(driver, wait, user, userType, environment):
     logging.info(f"Payment Table Loaded after {load_time_recorded} seconds")
     
 def manageUsers(driver, wait, user, userType, environment):
+    '''
+    Loads the Manage Users page. Waits until the table has loaded and records load time.
+    '''
+    
     logging.info("Manage Users Page Selection")
     page_menu = driver.find_element(By.ID, "page-menu")
     page_menu.click()
@@ -449,6 +468,10 @@ def manageUsers(driver, wait, user, userType, environment):
     logging.info(f"Manage Users Table Loaded after {load_time_recorded} seconds")
 
 def bookingManagement(driver, wait, user, userType, environment):
+    '''
+    Loads the Booking management page. Waits until the table has loaded and records load time.
+    '''
+    
     try:
         logging.info("Booking Management Page Selection")
         page_menu = driver.find_element(By.ID, "page-menu")
@@ -478,7 +501,78 @@ def bookingManagement(driver, wait, user, userType, environment):
         load_time_recorded = 300
     logging.info(f"Booking Management Table Loaded after {load_time_recorded} seconds")
     
+def storeDeskBooking(driver, wait, user, userType, item, environment):
     
+    #account to book and return item from
+    student = secrets.storeBooking[user]
+    
+    logging.info("Store Desk Process Started")
+    
+    page_menu = driver.find_element(By.ID, "page-menu")
+    page_menu.click()
+    
+    bookingManagement = driver.find_element(By.CSS_SELECTOR, "[aria-label='Booking Management']")
+    bookingManagement.click()
+        
+    store_desk = wait.until(EC.visibility_of_element_located((By.LINK_TEXT, "Store Desk")))
+    store_desk.click()
+    
+    time.sleep(shortDelay())
+    
+    collectpage = driver.find_element(By.XPATH, '//*[@id="sd-container-menu"]/ul/li[3]')
+    
+    collectpage.click()
+    
+    time.sleep(shortDelay())
+    
+    bookto = driver.find_element(By.XPATH, '//*[@id="bookedto_search"]')
+    bookto.click()
+    for i in student:
+        bookto.send_keys(i)
+        time.sleep(0.1)
+    bookto.send_keys(Keys.ENTER)
+    
+    itemBooking = driver.find_element(By.XPATH, '//*[@id="collect_asset_search"]')
+    itemBooking.click()
+    for i in item:
+        itemBooking.send_keys(i)
+        time.sleep(0.1)
+    itemBooking.send_keys(Keys.ENTER)
+    
+    time.sleep(shortDelay())
+    
+    selectItem = driver.find_element(By.XPATH, '//*[@id="collect_asset"]/div[2]/div[1]')
+    selectItem.click()
+    
+    time.sleep(shortDelay())
+    
+    #! Content container  = //*[@id="sd-container-content"]/div[5]/div
+    #! aria-label="Return Date"
+    
+    itemBooking.send_keys(Keys.PAGE_DOWN)
+    
+    time.sleep(shortDelay())
+    
+    bookingNotes = driver.find_element(By.XPATH, '//*[@id="collect_notes"]')
+    testingNote = f"performance testing - item booked '{item}' on {datetime.now().date()} by Dr Passmore"
+    bookingNotes.click()
+    for i in testingNote:
+        bookingNotes.send_keys(i)
+        time.sleep(0.1)
+    
+    time.sleep(shortDelay())
+    
+    process = driver.find_element(By.XPATH, '//*[@id="sd-container-content"]/div[5]/div/div[8]/div/div/div/div/div/button')
+    process.click()
+    
+    time.sleep(100)
+    
+    time.sleep(longDelay())
+    
+    
+    
+    
+
 #! new approach
 def bookingLookUp(driver, wait, user, userType, environment):
     page_menu = driver.find_element(By.ID, "page-menu")
@@ -610,7 +704,6 @@ def updateCSV(user, userType, process, load_time_recorded, environment):
         writer.writerow(new_row)
     csvFile.close()
     logging.info(f"CSV updated with {new_row}")
-
     
 def longDelay():
     '''
@@ -625,6 +718,9 @@ def shortDelay():
     return randint(2, 4)
 
 def dateSelection():
+    '''
+    Gets date in the future to minimise impact on students. In particular a week on Friday
+    '''
     # Get today's date
     currentday = dt.date.today()
 
@@ -659,12 +755,12 @@ logging.basicConfig(filename='testing.log',
                     datefmt='%Y-%m-%d %H:%M:%S')
 loops = 5
 
+
 for i in range(loops):
     for i in secrets.username:
         user = i[0]
         userType = i[1]
         item = i[2]
-        time.sleep(5)
         load_time_testing(user, userType, passwordSecret, item)
-        #updateCSV(user, userType, load_time_recorded)
+       
     
