@@ -28,41 +28,54 @@ def load_time_testing(user, userType, passwordSecret, item):
     Initiates the webdriver and logs into the website
     '''
     logging.info(f"Starting test with {user}")
-    driver = webdriver.Chrome()
+    
+    options = webdriver.ChromeOptions()
+    options.add_argument('--incognito')
+    driver = webdriver.Chrome(options=options)
     #Sets wait time to 5 minutes for page element to load
     wait = WebDriverWait(driver, 300)
-    driver.get(secrets.target_url)
-    driver.maximize_window()
-    time.sleep(shortDelay())
-    logging.info("login page")
     
-    if 'demo' in secrets.target_url:
-        environment = "UAT"
-        logging.info(f"Logging into the {environment} environment")
+    if "@test" in user:
+        driver.get(secrets.target_url)
+        driver.maximize_window()
+        time.sleep(shortDelay())
+        logging.info("login page")
+        
+        if 'demo' in secrets.target_url:
+            environment = "UAT"
+            logging.info(f"Logging into the {environment} environment")
+        else:
+            environment = "Live"
+            logging.info(f"Logging into the {environment} environment")
+        
+        #input username
+        username = driver.find_element(By.ID, "uname")
+        for i in user:
+            username.send_keys(i)
+            time.sleep(0.1)
+        time.sleep(1)
+
+        #input password
+        password = driver.find_element(By.ID, "pword")
+        for i in passwordSecret:
+            password.send_keys(i)
+            time.sleep(0.1)
+        time.sleep(1)
+
+        #press login
+        start = timer()
+        process = "Login to Dashboard"
+        login = driver.find_element(By.ID, "login")
+        logging.info("Logging into system")
+        login.click()
+        
     else:
-        environment = "Live"
-        logging.info(f"Logging into the {environment} environment")
-    
-    #input username
-    username = driver.find_element(By.ID, "uname")
-    for i in user:
-        username.send_keys(i)
-        time.sleep(0.1)
-    time.sleep(1)
-
-    #input password
-    password = driver.find_element(By.ID, "pword")
-    for i in passwordSecret:
-        password.send_keys(i)
-        time.sleep(0.1)
-    time.sleep(1)
-
-    #press login
-    start = timer()
-    process = "Login to Dashboard"
-    login = driver.find_element(By.ID, "login")
-    logging.info("Logging into system")
-    login.click()
+        driver.get(secrets.target_url2)
+        driver.maximize_window()
+        time.sleep(shortDelay())
+        logging.info("login page")
+        
+        
     if userType == "Admin" or userType == "StoreAssistant":
         wait.until(EC.visibility_of_element_located((By.ID, "form_panel_icons")))
        
@@ -729,12 +742,14 @@ def shortDelay():
 def dateSelection():
     '''
     Gets date in the future to minimise impact on students. In particular a week on Friday
+    
+    UPDATE - Due to running this so close to easter it is now selecting a week on Thursday
     '''
     # Get today's date
     currentday = dt.date.today()
 
     # Calculate the next Friday
-    friday = currentday + dt.timedelta((4 - currentday.weekday()) % 7 + 7)
+    friday = currentday + dt.timedelta((4 - currentday.weekday()) % 7 + 6)
 
     # Format the date as "Fri, Mar 17th 2023"
     friday_str = friday.strftime("%a, %b %d")
