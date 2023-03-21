@@ -35,45 +35,40 @@ def load_time_testing(user, userType, passwordSecret, item):
     #Sets wait time to 5 minutes for page element to load
     wait = WebDriverWait(driver, 300)
     
-    if "@test" in user:
-        driver.get(secrets.target_url)
-        driver.maximize_window()
-        time.sleep(shortDelay())
-        logging.info("login page")
-        
-        if 'demo' in secrets.target_url:
-            environment = "UAT"
-            logging.info(f"Logging into the {environment} environment")
-        else:
-            environment = "Live"
-            logging.info(f"Logging into the {environment} environment")
-        
-        #input username
-        username = driver.find_element(By.ID, "uname")
-        for i in user:
-            username.send_keys(i)
-            time.sleep(0.1)
-        time.sleep(1)
-
-        #input password
-        password = driver.find_element(By.ID, "pword")
-        for i in passwordSecret:
-            password.send_keys(i)
-            time.sleep(0.1)
-        time.sleep(1)
-
-        #press login
-        start = timer()
-        process = "Login to Dashboard"
-        login = driver.find_element(By.ID, "login")
-        logging.info("Logging into system")
-        login.click()
-        
+    driver.get(secrets.target_url)
+    driver.maximize_window()
+    time.sleep(shortDelay())
+    logging.info("login page")
+    
+    if 'demo' in secrets.target_url:
+        environment = "UAT"
+        logging.info(f"Logging into the {environment} environment")
     else:
-        driver.get(secrets.target_url2)
-        driver.maximize_window()
-        time.sleep(shortDelay())
-        logging.info("login page")
+        environment = "Live"
+        logging.info(f"Logging into the {environment} environment")
+    
+    #input username
+    username = driver.find_element(By.ID, "uname")
+    for i in user:
+        username.send_keys(i)
+        time.sleep(0.1)
+    time.sleep(1)
+
+    #input password
+    password = driver.find_element(By.ID, "pword")
+    for i in passwordSecret:
+        password.send_keys(i)
+        time.sleep(0.1)
+    time.sleep(1)
+
+    #press login
+    start = timer()
+    process = "Login to Dashboard"
+    login = driver.find_element(By.ID, "login")
+    logging.info("Logging into system")
+    login.click()
+        
+    
         
         
     if userType == "Admin" or userType == "StoreAssistant":
@@ -568,9 +563,21 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
     load_time_recorded = round(end-start, 2)
     updateCSV(user, userType, process, load_time_recorded, environment)
     time.sleep(shortDelay())
-    #returnTimeItem.click()
+    returnTimeItem.click()
     
+    time.sleep(shortDelay())
     
+    nextday = dateSelectionAdhoc()
+    
+    returnDate = driver.find_element(By.CSS_SELECTOR, f"[aria-label='{nextday}']")
+    returnDate.click()
+    
+    time.sleep(shortDelay())
+    
+    clickDone = driver.find_element(By.XPATH, '/html/body/div[2]/div/div[2]/span[1]/div/div/div')
+    clickDone.click()
+    
+    time.sleep(shortDelay())
   
     
     itemBooking.send_keys(Keys.PAGE_DOWN)
@@ -587,7 +594,7 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
     time.sleep(shortDelay())
     
     process = driver.find_element(By.XPATH, '//*[@id="sd-container-content"]/div[5]/div/div[8]/div/div/div/div/div/button')
-    #process.click()
+    process.click()
     
     time.sleep(longDelay())
     
@@ -768,6 +775,34 @@ def dateSelection():
     friday_str += " " + str(friday.year)
 
     return friday_str
+
+def dateSelectionAdhoc():
+    '''
+    Gets Return date for following day
+    '''
+    # Get today's date
+    today = dt.date.today()
+
+    # Calculate the next Friday
+    nextDay = today + dt.timedelta((4 - today.weekday()) % 7 + 1)
+
+    # Format the date as "Fri, Mar 17th 2023"
+    nextDay_str = nextDay.strftime("%a, %b %d")
+
+    # Add "st", "nd", "rd", or "th" to the day based on its value
+    if nextDay.day in [1, 21, 31]:
+        nextDay_str += "st"
+    elif nextDay.day in [2, 22]:
+        nextDay_str += "nd"
+    elif nextDay.day in [3, 23]:
+        nextDay_str += "rd"
+    else:
+        nextDay_str += "th"
+
+    # Add the year to the date string
+    nextDay_str += " " + str(nextDay.year)
+
+    return nextDay_str
 
 
 passwordSecret = secrets.password
