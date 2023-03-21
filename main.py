@@ -332,6 +332,10 @@ def storeAssistantProcess(driver, wait, user, userType, item, environment):
     
     logging.info("Store assistant process started")
     
+    storeDeskBooking(driver, wait, user, userType, item, environment)
+    
+    time.sleep(longDelay())
+    
     assetManagementPage(driver, wait, user, userType, environment)
     
     time.sleep(shortDelay())
@@ -553,8 +557,6 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
     itemlist.click()
     
     
-    
-    
     start = timer()
     process = "Find item for adhoc booking"
     returnTimeItem = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "[aria-label='Return Date']")))
@@ -597,6 +599,56 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
     process.click()
     
     time.sleep(longDelay())
+    
+    close = driver.find_element(By.CSS_SELECTOR, "[aria-label='Close']")
+    close.click()
+    
+    
+    time.sleep(longDelay())
+    
+    storeDeskReturn(driver, wait, user, userType, item, environment)
+    
+def storeDeskReturn(driver, wait, user, userType, item, environment):
+    #account to book and return item from
+    student = secrets.storeBooking[user]
+    
+    restock = driver.find_element(By.XPATH, '//*[@id="sd-container-menu"]/ul/li[4]')    
+    restock.click()
+    
+    bookto = driver.find_element(By.XPATH, '//*[@id="bookedto_search"]')
+    bookto.click()
+    for i in student:
+        bookto.send_keys(i)
+        time.sleep(0.1)
+    
+    
+    process = "Look up assets for return"
+    bookto.send_keys(Keys.ENTER)
+    start = timer()
+    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "sd-asset-item")))
+    
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded, environment)
+    logging.info("Search completed")
+    
+    
+    
+    time.sleep(shortDelay())
+    #process = driver.find_element(By.XPATH, '/html/body/main/section/div[2]/div[2]/div[6]/div/div[3]/div[2]/div/div[3]/div[1]/div[2]/div')
+    process = driver.find_element(By.CSS_SELECTOR, '.ds-row > div:nth-child(1) > div:nth-child(3) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1)')
+    process.click()
+    
+    time.sleep(shortDelay())
+    
+    completeReturn = driver.find_element(By.XPATH, '/html/body/main/section/div[2]/div[2]/div[6]/div/div[5]/div/div/div/div/div/button')
+    completeReturn.click()
+    
+    
+    
+   
+    
+    time.sleep(20)
     
     
     
