@@ -783,8 +783,8 @@ def dateSelectionAdhoc():
     # Get today's date
     today = dt.date.today()
 
-    # Calculate the next Friday
-    nextDay = today + dt.timedelta((4 - today.weekday()) % 7 + 1)
+    # Calculate the next day
+    nextDay = today + dt.timedelta(days=1)
 
     # Format the date as "Fri, Mar 17th 2023"
     nextDay_str = nextDay.strftime("%a, %b %d")
