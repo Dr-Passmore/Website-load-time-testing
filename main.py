@@ -332,10 +332,6 @@ def storeAssistantProcess(driver, wait, user, userType, item, environment):
     
     logging.info("Store assistant process started")
     
-    storeDeskBooking(driver, wait, user, userType, item, environment)
-    
-    time.sleep(longDelay())
-    
     assetManagementPage(driver, wait, user, userType, environment)
     
     time.sleep(shortDelay())
@@ -357,6 +353,11 @@ def storeAssistantProcess(driver, wait, user, userType, item, environment):
     time.sleep(shortDelay())
     
     storeDeskBooking(driver, wait, user, userType, item, environment)
+    
+    time.sleep(shortDelay())
+    
+    #if "amata" in user:
+    #    roomBooking(driver, wait, user, userType, item, environment)
     
     time.sleep(longDelay())
     driver.quit()
@@ -595,12 +596,19 @@ def storeDeskBooking(driver, wait, user, userType, item, environment):
     
     time.sleep(shortDelay())
     
-    process = driver.find_element(By.XPATH, '//*[@id="sd-container-content"]/div[5]/div/div[8]/div/div/div/div/div/button')
-    process.click()
+    processbutton = driver.find_element(By.XPATH, '//*[@id="sd-container-content"]/div[5]/div/div[8]/div/div/div/div/div/button')
     
+    start = timer()
+    process = "Process adhoc booking"
+    processbutton.click()
+    
+    
+    close =wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "[aria-label='Close']")))
+    
+    end = timer()
+    load_time_recorded = round(end-start, 2)
+    updateCSV(user, userType, process, load_time_recorded, environment)
     time.sleep(longDelay())
-    
-    close = driver.find_element(By.CSS_SELECTOR, "[aria-label='Close']")
     close.click()
     
     
@@ -646,12 +654,14 @@ def storeDeskReturn(driver, wait, user, userType, item, environment):
     
     
     
-   
     
-    time.sleep(20)
+def roomBooking(driver, wait, user, userType, item, environment):
+       
+    page_menu = driver.find_element(By.ID, "page-menu")
     
-    
-    
+    page_menu.click()
+
+    time.sleep(shortDelay())
     
 
 #! new approach
@@ -794,9 +804,9 @@ def longDelay():
 
 def shortDelay():
     '''
-    Provides a random delay between 2 and 4 seconds
+    Provides a random delay between 3 and 5 seconds
     '''
-    return randint(2, 4)
+    return randint(3, 5)
 
 def dateSelection():
     '''
@@ -864,7 +874,7 @@ logging.basicConfig(filename='testing.log',
                     level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
-loops = 5
+loops = 20
 
 
 for i in range(loops):
