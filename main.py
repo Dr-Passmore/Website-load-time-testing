@@ -661,51 +661,7 @@ def roomBooking(driver, wait, user, userType, item, environment):
     
     page_menu.click()
 
-    time.sleep(shortDelay())
-    
-
-#! new approach
-def bookingLookUp(driver, wait, user, userType, environment):
-    page_menu = driver.find_element(By.ID, "page-menu")
-    
-    page_menu.click()
-
-    time.sleep(shortDelay())
-
-    booking_management = driver.find_element(By.CSS_SELECTOR, "[aria-label='Booking Management']")
-    booking_management.click()
-
-    time.sleep(shortDelay())
-    # Wait for the element to be visible on the page
-    wait = WebDriverWait(driver, 10)
-    store_desk = wait.until(EC.visibility_of_element_located((By.LINK_TEXT, "Store Desk")))
-
-    # Move to the element and click on it
-    actions = ActionChains(driver)
-    actions.move_to_element(store_desk).perform()
-    store_desk.click()
-
-    time.sleep(shortDelay())
-    test = "testinggamesstudent@test.ac.uk"
-    bookedto_search = driver.find_element(By.ID, "bookedto_search")
-    for i in test:
-        bookedto_search.send_keys(i)
-    start = time.time()
-    bookedto_search.send_keys(Keys.ENTER)
-    bookedto_search.send_keys(Keys.PAGE_DOWN)
-
-    wait = WebDriverWait(driver, 60)
-    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "sd-asset-item-content")))
-
-    end = time.time()
-    load_time_recorded = end-start
-    
-    #TODO cancel booking
-    updateCSV(user, userType, load_time_recorded)
-    
-
-    
-    
+    time.sleep(shortDelay())    
     
     
 def cleanupPartlyCompleted(driver, wait, user, userType, item, environment):
